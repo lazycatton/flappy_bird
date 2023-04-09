@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flappy Bird</title>
+  <style>
+    #gameCanvas {
+      margin: 0 auto; /* Center the canvas horizontally */
+      background-color: #f0f0f0; /* Set background color */
+    }
+  </style>
+</head>
+<body id="body">
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+
+  <script>
+  // Step1
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+
+var gamestart = false
+var gameStop = false
+
+var birdX = 0
+var birdY = 270
+var birdWidth = 50
+var birdHeight = 50
+var birdSpeedY = 0
+var gravity = 0.3
+
+var pipeWidth = 30
+var gapHeight = 120
+
+var pipes = [];
+
+var pipeSpeedX = 2
+var jumpHeight = -4
+
+
+setInterval(function() {
+  if (gamestart && !gameStop)
+    generatePipe();
+}, 1500);
+
+// Step2
+function gameLoop() {
+
+  if (!gameStop) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground(); 
+    drawBird(); 
+    drawPipes();
+
+    // Update game logic
+    updateGameLogic();
+
+    // Request the next animation frame
+    requestAnimationFrame(gameLoop);
+  }
+}
+
+function drawBackground() {
+  // Draw an image for the background
+  const backgroundImage = new Image();
+  backgroundImage.src = 'background.jpg';
+  
+  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+}
+
+function drawBird() {
+  var birdImg = new Image();
+  birdImg.src = 'bird.jpg';
+  
+  ctx.drawImage(birdImg, birdX, birdY, birdWidth, birdHeight);
+}
+
+function generatePipe() {
+  var pipeHeight = Math.random() * (canvas.height - 200) + 100; // Random height between 100 and canvas height - 100
+  var pipeX = canvas.width; // Start drawing the pipe from the right edge of the canvas
+
+  // Create pipe object
+  var pipe = {
+    x: pipeX,
+    pipeHeight: pipeHeight
+  };
+
+  // Add the pipe object to the pipes array
+  pipes.push(pipe);
+}
+
+
+function drawPipes() {
+  ctx.fillStyle = 'green';
+
+  // Loop through all pipes in the pipes array
+  for (var i = 0; i < pipes.length; i++) {
+    var pipe = pipes[i];
+
+    // Draw top pipe
+    ctx.fillRect(pipe.x + i*pipeWidth*5, 0, pipeWidth, pipe.pipeHeight);
+
+    // Draw bottom pipe
+    ctx.fillRect(pipe.x + i*pipeWidth*5, pipe.pipeHeight + gapHeight, pipeWidth, canvas.height-pipe.pipeHeight-gapHeight);
+
+    // Update pipe x position for next frame
+    pipe.x -= pipeSpeedX;
+  }
+
+
+  // Remove the pipe from the pipes array if it's off the left edge of the canvas
+  pipes = pipes.filter(pipe => pipe.x + pipeWidth >= 0)
+}
+
+function updateGameLogic() {
+  if (!gamestart || gameStop) return;
+
+  // Update bird's position
+  birdSpeedY += gravity; 
+  birdY += birdSpeedY;
+
+  // Check for collision with pipes
+  checkCollision();
+}
+
+
+// Start the game loop
+gameLoop();
+
+// step 3
+// Add event listener for key down events
+document.addEventListener('keydown', function(event) {
+  // Check which key is pressed
+  if (event.code === 'Space') {
+    gamestart = true
+    // Space key is pressed, update bird's vertical speed
+    birdSpeedY = jumpHeight; // Set bird's vertical speed to simulate jumping
+  }
+});
+
+// Add event listener for mouse or touch events
+document.addEventListener('mousedown', function() {
+  // Mouse button is pressed or touch event is detected, update bird's vertical speed
+  birdSpeedY = jumpHeight; // Set bird's vertical speed to simulate jumping
+});
+
+// step 4
+function checkCollision() {
+  if (pipes.length == 0 || pipes[0].x > 0) return;
+  
+  var pipe = pipes[0];
+  var buffer = 5;  // additional buffer
+
+  // Check collision with top/bottom pipe
+  if (birdX + birdWidth > pipe.x && birdX < pipe.x + pipeWidth &&
+      (birdY < pipe.pipeHeight - buffer || 
+        birdY + birdHeight > pipe.pipeHeight + gapHeight + buffer)) {
+    console.log("birdX: " + birdX)
+  console.log("pipe.x: " + pipe.x)
+  console.log("pipeWidth: " + pipeWidth)
+    console.log("birdY: " + birdY)
+  console.log("pipe.pipeHeight: " + pipe.pipeHeight)
+  console.log("gapHeight: " + gapHeight)
+    gameOver();
+    return;
+  }
+
+  if (birdY > canvas.height) {
+    gameOver();
+    return;
+  }
+}
+
+function gameOver() {
+  gameStop = true;
+
+  var gameOverImg = new Image();
+  gameOverImg.onload = function() {
+    ctx.drawImage(gameOverImg, 100, 100, 500, 500);
+  };
+  gameOverImg.src = 'game-over.png';
+}
+  
+</script>
+</body>
+</html>
+
