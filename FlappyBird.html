@@ -21,6 +21,7 @@ const ctx = canvas.getContext('2d');
 
 var gamestart = false
 var gameStop = false
+var generateNewPipe = false
 
 var birdX = 0
 var birdY = 270
@@ -40,20 +41,20 @@ var jumpHeight = -4
 
 setInterval(function() {
   if (gamestart && !gameStop)
-    generatePipe();
+    generateNewPipe = true;
 }, 1500);
 
 // Step2
 function gameLoop() {
 
   if (!gameStop) {
+    // Update game logic
+    updateGameLogic();
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground(); 
     drawBird(); 
     drawPipes();
-
-    // Update game logic
-    updateGameLogic();
 
     // Request the next animation frame
     requestAnimationFrame(gameLoop);
@@ -105,11 +106,18 @@ function drawPipes() {
 
     // Update pipe x position for next frame
     pipe.x -= pipeSpeedX;
+
+    // Remove the pipe from the pipes array if it's off the left edge of the canvas
+    if (pipe.x + pipeWidth < 0) {
+      pipes.splice(i, 1);
+      i--;
+    }
   }
 
-
-  // Remove the pipe from the pipes array if it's off the left edge of the canvas
-  pipes = pipes.filter(pipe => pipe.x + pipeWidth >= 0)
+  if (generateNewPipe) {
+    generatePipe();
+    generateNewPipe = false;
+  }
 }
 
 function updateGameLogic() {
@@ -146,7 +154,7 @@ document.addEventListener('mousedown', function() {
 
 // step 4
 function checkCollision() {
-  if (pipes.length == 0 || pipes[0].x > 0) return;
+  if (pipes.length == 0) return;
   
   var pipe = pipes[0];
   var buffer = 5;  // additional buffer
@@ -155,12 +163,6 @@ function checkCollision() {
   if (birdX + birdWidth > pipe.x && birdX < pipe.x + pipeWidth &&
       (birdY < pipe.pipeHeight - buffer || 
         birdY + birdHeight > pipe.pipeHeight + gapHeight + buffer)) {
-    console.log("birdX: " + birdX)
-  console.log("pipe.x: " + pipe.x)
-  console.log("pipeWidth: " + pipeWidth)
-    console.log("birdY: " + birdY)
-  console.log("pipe.pipeHeight: " + pipe.pipeHeight)
-  console.log("gapHeight: " + gapHeight)
     gameOver();
     return;
   }
