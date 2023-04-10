@@ -22,6 +22,7 @@ const ctx = canvas.getContext('2d');
 var gamestart = false
 var gameStop = false
 var generateNewPipe = false
+var birdFlying = false
 
 var birdX = 0
 var birdY = 270
@@ -43,6 +44,12 @@ setInterval(function() {
   if (gamestart && !gameStop)
     generateNewPipe = true;
 }, 1500);
+
+
+setInterval(function() {
+  if (gamestart && !gameStop)
+    birdFlying = false;
+}, 300);
 
 // Step2
 function gameLoop() {
@@ -71,7 +78,11 @@ function drawBackground() {
 
 function drawBird() {
   var birdImg = new Image();
-  birdImg.src = 'bird.jpg';
+  if (!birdFlying) {
+    birdImg.src = 'bird1.png';
+  } else {
+    birdImg.src = 'bird2.png';
+  }
   
   ctx.drawImage(birdImg, birdX, birdY, birdWidth, birdHeight);
 }
@@ -140,16 +151,21 @@ gameLoop();
 document.addEventListener('keydown', function(event) {
   // Check which key is pressed
   if (event.code === 'Space') {
-    gamestart = true
+    gamestart = true;
     // Space key is pressed, update bird's vertical speed
     birdSpeedY = jumpHeight; // Set bird's vertical speed to simulate jumping
+
+    birdFlying = true;
   }
 });
 
 // Add event listener for mouse or touch events
 document.addEventListener('mousedown', function() {
-  // Mouse button is pressed or touch event is detected, update bird's vertical speed
-  birdSpeedY = jumpHeight; // Set bird's vertical speed to simulate jumping
+    gamestart = true;
+    // Mouse button is pressed or touch event is detected, update bird's vertical speed
+    birdSpeedY = jumpHeight; // Set bird's vertical speed to simulate jumping
+
+    birdFlying = true;
 });
 
 // step 4
